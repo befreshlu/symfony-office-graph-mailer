@@ -147,9 +147,19 @@ class GraphApiTransport extends AbstractApiTransport
                 'contentBytes' => base64_encode($attachment->getBody()),
                 'name' => $filename,
             ];
-            if (method_exists($attachment, 'getDisposition') && $attachment->getDisposition() === 'inline') {
+
+            // Backwards compatibility with Symfony 5: use reflection to access disposition and name properties
+            // when getter methods are not available in older Symfony versions
+            $attachmentDisposition = method_exists($attachment, 'getDisposition')
+                ? $attachment->getDisposition()
+                : (new \ReflectionProperty(get_parent_class($attachment), 'disposition'))->getValue($attachment);
+            $attachmentName = method_exists($attachment, 'getName')
+                ? $attachment->getName()
+                : (new \ReflectionProperty(get_parent_class($attachment), 'name'))->getValue($attachment);
+
+            if ($attachmentDisposition === 'inline') {
                 $normalizedAttachment['isInline'] = true;
-                $normalizedAttachment['contentId'] = $attachment->getName();
+                $normalizedAttachment['contentId'] = $attachmentName;
             }
             $attachments[] = $normalizedAttachment;
         }
