@@ -147,7 +147,7 @@ class GraphApiTransport extends AbstractApiTransport
                 'contentBytes' => base64_encode($attachment->getBody()),
                 'name' => $filename,
             ];
-            if ($attachment->getDisposition() === 'inline') {
+            if (method_exists($attachment, 'getDisposition') && $attachment->getDisposition() === 'inline') {
                 $normalizedAttachment['isInline'] = true;
                 $normalizedAttachment['contentId'] = $attachment->getName();
             }
